@@ -9,7 +9,8 @@ const {
   login,
   sendotp,
   verifyotps,
-  userlogin
+  userlogin,
+  edituser
 
 } = require("../controller/user");
  
@@ -19,6 +20,8 @@ router.post("/user/verifyotps", verifyotps);
   
 router.post("/user/login", login);
 router.post("/user/userlogin", userlogin);
+router.post("/user/edituser/:id", edituser);
+
 
  
 

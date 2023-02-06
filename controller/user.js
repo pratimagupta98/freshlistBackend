@@ -1,4 +1,6 @@
 const User = require("../models/user");
+const resp = require("../helpers/apiResponse");
+
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
@@ -126,4 +128,16 @@ exports.login = async (req, res) => {
         msg: "User doesn't Exist",
       });
     }
+  };
+
+  exports.edituser = async (req, res) => {
+    await User.findOneAndUpdate(
+      {
+        _id: req.params.id,
+      },
+      { $set: req.body },
+      { new: true }
+    )
+      .then((data) => resp.successr(res, data))
+      .catch((error) => resp.errorr(res, error));
   };
