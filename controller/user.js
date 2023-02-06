@@ -43,10 +43,15 @@ exports.login = async (req, res) => {
     let length = 6;
     let defaultotp = "123456";
   
-    const { mobile } = req.body;
+    const { mobile,password } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt);
+
     const newUser = new User({
       mobile: mobile,
-      otp: defaultotp
+      otp: defaultotp,
+      password:hashPassword
     });
   
     const findexist = await User.findOne({ mobile: mobile });
