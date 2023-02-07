@@ -156,6 +156,38 @@ if(user){
       .catch((error) => resp.errorr(res, error));
   };
 
+
+ exports.login = async (req, res) => {
+    const {  mobile, password,email } = req.body;
+    const user = await User.findOne( {   
+      $and: [
+        { $or: [{ mobile: mobile }, { email: email }] }
+      ]
+    });
+    if (user.status == "true") {
+        
+      const validPass = await bcrypt.compare(password, user.password);
+      if (validPass) {
+        res.status(200).send({
+          status: true,
+          msg: "success",
+          user: user,
+        });
+      } else {
+        res.status(400).json({
+          status: false,
+          msg: "Incorrect Password",
+          error: "error",
+        });
+      }
+    } else {
+      res.status(400).json({
+        status: false,
+        msg: "User Doesnot Exist",
+        error: "error",
+      });
+    }
+  };
   
 
  

@@ -17,7 +17,7 @@ const customerSchema = new Schema(
       type: String,
     },
     mobile: {
-      type: Number,
+      type: String,
     },
     oldpassword:{
       type: String,
