@@ -5,39 +5,52 @@ const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { Console } = require("console");
  const saltRounds = 10;
 const key = "verysecretkey";
 
-exports.login = async (req, res) => {
+exports.userlogin = async (req, res) => {
     const {  mobile, password,email } = req.body;
-    const user = await User.findOne( {   
-      $and: [
-        { $or: [{ mobile: mobile }, { email: email }] }, { $or: [{status:"true" }] }
-      ]
+   
+    const user = await User.findOne({$or:[{mobile:mobile},{email:email}]
+   
     });
-    if (user) {
+    console.log("USER",user)
+if(user){
+
+  if (user.status == "true") {
         
-      const validPass = await bcrypt.compare(password, user.password);
-      if (validPass) {
-        res.status(200).send({
-          status: true,
-          msg: "success",
-          user: user,
-        });
-      } else {
-        res.status(400).json({
-          status: false,
-          msg: "Incorrect Password",
-          error: "error",
-        });
-      }
+    const validPass = await bcrypt.compare(password, user.password);
+    if (validPass) {
+      res.status(200).send({
+        status: true,
+        msg: "success",
+        user: user,
+      });
     } else {
-      res.status(400).json({
+      res.status(404).json({
         status: false,
-        msg: "User Doesnot Exist",
+        msg: "Incorrect Password",
         error: "error",
       });
     }
+  }  
+  else{
+    res.status(400).json({
+      status: false,
+      msg: "User Doesnot Exist",
+      error: "error",
+    });
+  }
+
+}else {
+    res.status(404).json({
+      status: false,
+      msg: "User Doesnot Exist",
+      error: "error",
+    });
+  }
+    
   };
 
 
@@ -45,15 +58,15 @@ exports.login = async (req, res) => {
     let length = 6;
     let defaultotp = "123456";
   
-    const { mobile,password } = req.body;
+    const { mobile } = req.body;
 
-    const salt = await bcrypt.genSalt(10);
-        const hashPassword = await bcrypt.hash(password, salt);
+    // const salt = await bcrypt.genSalt(10);
+    //     const hashPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({
       mobile: mobile,
       otp: defaultotp,
-      password:hashPassword
+      //password:hashPassword
     });
   
     const findexist = await User.findOne({ mobile: mobile });
@@ -77,7 +90,7 @@ exports.login = async (req, res) => {
       .catch((error) => {
         res.status(400).json({
           status: false,
-          msg: "unsend otp",
+          msg: "error",
           error: error,
         })
       })
@@ -88,48 +101,33 @@ exports.login = async (req, res) => {
     let length = 6;
     let defaultotp = "123456";
     const { mobile, otp } = req.body;
-    if (otp == 123456) {
+     
       const findone = await User.findOne({ mobile: mobile });
       if (findone) {
-        res.status(200).json({
-          status: true,
-          msg: "otp verified please register",
-          mobile: mobile,
-          otp: defaultotp,
-          _id: findone._id
+        if (otp == "123456"){
+          res.status(200).json({
+              status: true,
+              msg: "otp verified",
+              mobile: mobile,
+              otp: defaultotp,
+              _id: findone._id
+            });
+        }else{
+          res.status(400).json({
+            status: false,
+            msg: "Incorrect Otp",
+          });
+        }
+      }else{
+        res.status(404).json({
+          status: false,
+          error: "Something went wrong",
         });
       }
-    } else {
-      res.status(400).json({
-        status: false,
-        msg: "Incorrect Otp",
-      });
-    }
-  }
+    } 
+    
 
-
-  exports.userlogin = async (req, res) => {
-    let length = 6;
-    let defaultotp = "123456";
-    const getuser = await User.findOne({ mobile: req.body.mobile });
-    if (getuser) {
-      console.log("STRING", getuser)
-      res.status(200).send({
-        status: true,
-        msg: "otp Send Successfully",
-        otp: defaultotp,
-        // _id: getuser._id,
-        // mobile: getuser.mobile,
-        // approvedstatus: getuser.approvedstatus
-      })
-    } else if (!getuser) {
-      res.status(400).json({
-        status: true,
-        msg: "User doesn't Exist",
-      });
-    }
-  };
-
+  
   exports.edituser = async (req, res) => {
     await User.findOneAndUpdate(
       {
@@ -141,3 +139,31 @@ exports.login = async (req, res) => {
       .then((data) => resp.successr(res, data))
       .catch((error) => resp.errorr(res, error));
   };
+
+  exports.add_details = async (req, res) => {
+    const {username,email,password,cnfrmPassword} = req.body
+
+    const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt);
+    await User.findOneAndUpdate(
+      {
+        _id: req.params.id,
+      },
+      { $set: req.body,status:"true",password:hashPassword,cnfrmPassword:hashPassword },
+      { new: true }
+    )
+      .then((data) => resp.successr(res, data))
+      .catch((error) => resp.errorr(res, error));
+  };
+
+  
+
+  // exports.userlogin = async (req, res) => {
+  //   const {mobile,email} = req.body
+
+  //   const user = await User.findOne({$or:[{mobile:mobile},{email:email}]})
+  //   console.log("DATA",user)
+  //   if(user){
+  //     console.log("USER",user)
+  //   }
+  // }
