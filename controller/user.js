@@ -158,12 +158,4 @@ if(user){
 
   
 
-  // exports.userlogin = async (req, res) => {
-  //   const {mobile,email} = req.body
-
-  //   const user = await User.findOne({$or:[{mobile:mobile},{email:email}]})
-  //   console.log("DATA",user)
-  //   if(user){
-  //     console.log("USER",user)
-  //   }
-  // }
+ 
